@@ -4,6 +4,9 @@ from django.db import models
 class Student(models.Model):
     name = models.CharField(max_length=50)
     perfect_attendance = models.BooleanField(default=True)  # True if attended all classes.
+    # perfect attendance automatically becomes false is student is not present on any day.
+    # it does not auto update to True if all attendance entries are updated to True
+    # but setting it as false it automatic
 
 
 class Attendance(models.Model):
