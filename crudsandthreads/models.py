@@ -8,6 +8,6 @@ class Student(models.Model):
 
 
 class Attendance(models.Model):
-    student = models.ForeignKey(Student)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     Date = models.DateField()
     present = models.BooleanField(default=False)
