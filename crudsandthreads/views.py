@@ -1,7 +1,9 @@
+import json
+import subprocess
 from django.http import JsonResponse
 from django.urls import path, include
 from rest_framework.response import Response
-
+import crudsandthreads.multithreading_example as mtx
 from crudsandthreads import models as ctmodels
 from rest_framework import routers, serializers, viewsets, views
 
@@ -56,14 +58,43 @@ class AttendanceViewSet(viewsets.ModelViewSet):  # crud
 
 class ThreadingExampleView(views.APIView):
     """
-        Use POST to initiate threading functionality
+        Use GET method to initiale multiprocess example using a function in this program.
+        The default get response is a rest api template
+        goto http://127.0.0.1:8000/threading_example?format=json for GETting plain JSON output.
+
+        Use POST method(without inputs) to initiate the mutiprocess example from a separate py script
+
+        Each element of the output is in the following format {process count: sum of two random numbers}
     """
+
+    def is_valid_json(self, maybe_json):
+        try:
+            if type(maybe_json) is 'dict':
+                json.dumps(maybe_json)
+            elif type(maybe_json) is 'str':
+                json.loads(maybe_json)
+            else:
+                Exception('Input must be string or dict type')
+        except ValueError as err:
+            return False
+        return True
 
     def get(self, request, format=None):
         """
         Return a list of all users.
         """
-        return Response("use POST method to initiate threading. format {'x':123, 'y':123}")
+        proc_result_dict = mtx.start_multiprocessing()
+        if self.is_valid_json(proc_result_dict):
+            return Response(proc_result_dict)
+        else:
+            raise Exception('Invalid JSON data received from child process.')
 
     def post(self, request, format=None):
-        return Response({"message": "Hello for today! See you tomorrow!"})
+        output_data = dict()
+        proc = subprocess.Popen(['python3', './crudsandthreads/multithreading_example.py', ], stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT)
+        proc_result_str = proc.communicate()[0].rstrip()
+        if self.is_valid_json(proc_result_str):
+            return Response(proc_result_str)
+        else:
+            raise Exception('Invalid JSON data received from child process.')
