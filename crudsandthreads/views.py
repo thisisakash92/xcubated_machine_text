@@ -8,13 +8,13 @@ from rest_framework import routers, serializers, viewsets, views
 
 # no separate serializerspy file since it's only 2 serializers
 # and adding another file only makes it difficult to navigate in this tiny MT
-class StudentSerializer(serializers.HyperlinkedModelSerializer):
+class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ctmodels.Student
-        fields = ['name', 'perfect_attendance']
+        fields = ['id', 'name', 'perfect_attendance']
 
 
-class AttendanceSerializer(serializers.HyperlinkedModelSerializer):
+class AttendanceSerializer(serializers.ModelSerializer):
 
     def get_student_name(self, obj):
         return obj.student.name
@@ -23,12 +23,30 @@ class AttendanceSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = ctmodels.Attendance
-        fields = ['student', 'student_name', 'date', 'present']
+        fields = ['id', 'student', 'student_name', 'date', 'present']
+
+
+class StudentDetailsSerializer(serializers.ModelSerializer):
+    def get_attendance_record(self, obj):
+        return AttendanceSerializer(ctmodels.Attendance.objects.filter(student=obj), many=True).data
+
+    attendance_record = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ctmodels.Student
+        fields = ['id', 'name', 'perfect_attendance', 'attendance_record']
 
 
 class StudentViewSet(viewsets.ModelViewSet):  # crud
+    """
+        TO view attendace list of a particular student, go to \n http://127.0.0.1:8000/students/<STUDENT_ID>
+    """
     queryset = ctmodels.Student.objects.all()
     serializer_class = StudentSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        return Response(StudentDetailsSerializer(instance).data)
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):  # crud
@@ -49,4 +67,3 @@ class ThreadingExampleView(views.APIView):
 
     def post(self, request, format=None):
         return Response({"message": "Hello for today! See you tomorrow!"})
-
