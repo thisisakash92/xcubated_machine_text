@@ -11,5 +11,6 @@ router.register(r'attendance', ctviews.AttendanceViewSet)
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('', include(router.urls)),
+    path('threading_example', ctviews.ThreadingExampleView.as_view()),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]

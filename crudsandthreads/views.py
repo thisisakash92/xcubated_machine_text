@@ -1,6 +1,9 @@
+from django.http import JsonResponse
 from django.urls import path, include
+from rest_framework.response import Response
+
 from crudsandthreads import models as ctmodels
-from rest_framework import routers, serializers, viewsets
+from rest_framework import routers, serializers, viewsets, views
 
 
 # no separate serializerspy file since it's only 2 serializers
@@ -31,3 +34,19 @@ class StudentViewSet(viewsets.ModelViewSet):  # crud
 class AttendanceViewSet(viewsets.ModelViewSet):  # crud
     queryset = ctmodels.Attendance.objects.all()
     serializer_class = AttendanceSerializer
+
+
+class ThreadingExampleView(views.APIView):
+    """
+        Use POST to initiate threading functionality
+    """
+
+    def get(self, request, format=None):
+        """
+        Return a list of all users.
+        """
+        return Response("use POST method to initiate threading. format {'x':123, 'y':123}")
+
+    def post(self, request, format=None):
+        return Response({"message": "Hello for today! See you tomorrow!"})
+
